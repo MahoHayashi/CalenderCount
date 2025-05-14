@@ -9,6 +9,9 @@ import UIKit
 
 class ViewController: UIViewController, UICollectionViewDataSource, UICollectionViewDelegateFlowLayout {
 
+    var selectedItem: String?  // 選択された我慢項目を表示用
+    let itemLabel = UILabel()
+
     var count = 0
     let countLabel = UILabel()
     
@@ -33,6 +36,13 @@ class ViewController: UIViewController, UICollectionViewDataSource, UICollection
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = UIColor(red: 1.0, green: 0.87, blue: 0.84, alpha: 1.0) // #FFDFD6
+
+        // 我慢項目ラベルの設定
+        itemLabel.text = "\(selectedItem ?? "我慢")を我慢中！"
+        itemLabel.font = UIFont.systemFont(ofSize: 24)
+        itemLabel.textAlignment = .center
+        itemLabel.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(itemLabel)
 
         // ラベルの設定
         countLabel.text = "\(count)"
@@ -59,8 +69,11 @@ class ViewController: UIViewController, UICollectionViewDataSource, UICollection
 
         // Auto Layout
         NSLayoutConstraint.activate([
+            itemLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            itemLabel.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 10),
+
             countLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            countLabel.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 30),
+            countLabel.topAnchor.constraint(equalTo: itemLabel.bottomAnchor, constant: 10),
 
             minusButton.centerYAnchor.constraint(equalTo: countLabel.centerYAnchor),
             minusButton.trailingAnchor.constraint(equalTo: countLabel.leadingAnchor, constant: -30),

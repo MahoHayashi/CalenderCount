@@ -35,10 +35,11 @@ class ViewController: UIViewController, UICollectionViewDataSource, UICollection
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        view.backgroundColor = UIColor(red: 1.0, green: 0.87, blue: 0.84, alpha: 1.0) // #FFDFD6
+        view.backgroundColor = UIColor(red: 0.733, green: 0.886, blue: 0.945, alpha: 1.0) // #bbe2f1
 
         // 我慢項目ラベルの設定
-        itemLabel.text = "\(selectedItem ?? "我慢")を我慢中！"
+        itemLabel.text = "\(selectedItem ?? "我慢")を我慢中‼️"
+        //itemLabel.backgroundColor = .white
         itemLabel.font = UIFont.systemFont(ofSize: 24)
         itemLabel.textAlignment = .center
         itemLabel.translatesAutoresizingMaskIntoConstraints = false
@@ -91,7 +92,7 @@ class ViewController: UIViewController, UICollectionViewDataSource, UICollection
             calendarCollectionView.topAnchor.constraint(equalTo: countLabel.bottomAnchor, constant: 80),
             calendarCollectionView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
             calendarCollectionView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
-            calendarCollectionView.heightAnchor.constraint(equalToConstant: 300)
+            calendarCollectionView.heightAnchor.constraint(equalToConstant: 250)
         ])
         
         view.addSubview(imageView)
@@ -123,12 +124,12 @@ class ViewController: UIViewController, UICollectionViewDataSource, UICollection
                 if i < count {
                     cell.backgroundColor = UIColor.systemBlue
                 } else {
-                    cell.backgroundColor = UIColor.systemGray5
+                    cell.backgroundColor = .white
                 }
             }
         }
         if count == 30 {
-            imageView.image = UIImage(named: "cokeImage2")
+            imageView.image = UIImage(named: "end2")
             imageView.isHidden = false
         } else {
             imageView.isHidden = true
@@ -136,7 +137,7 @@ class ViewController: UIViewController, UICollectionViewDataSource, UICollection
     }
     
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return 30 // 1ヶ月分の日数
+        return 30 // 6列×5行 = 30日
     }
 
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
@@ -149,11 +150,11 @@ class ViewController: UIViewController, UICollectionViewDataSource, UICollection
         if indexPath.item < count {
             cell.backgroundColor = UIColor.systemBlue
         } else {
-            cell.backgroundColor = UIColor.systemGray5
+            cell.backgroundColor = .white
         }
 
         let label = UILabel(frame: cell.contentView.bounds)
-        label.text = "\(indexPath.item + 1)"
+        label.text = indexPath.item < 30 ? "\(indexPath.item + 1)" : ""
         label.textAlignment = .center
         label.font = UIFont.systemFont(ofSize: 14)
         cell.contentView.addSubview(label)
@@ -162,7 +163,9 @@ class ViewController: UIViewController, UICollectionViewDataSource, UICollection
     }
 
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
-        let width = (collectionView.frame.width - 6) / 7
-        return CGSize(width: width, height: width)
+        let totalSpacing: CGFloat = 5  // 6 gaps between 6 columns
+        let width = (collectionView.frame.width - totalSpacing) / 6
+        let height = (collectionView.frame.height - totalSpacing) / 5
+        return CGSize(width: width, height: height)
     }
 }

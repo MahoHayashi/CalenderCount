@@ -1,3 +1,4 @@
+
 //
 //  ViewController.swift
 //  CalenderCount
@@ -121,6 +122,15 @@ class ViewController: UIViewController, UICollectionViewDataSource, UICollection
         updateHandler?(selectedItem)
     }
     
+    func saveAchievement(for item: Item) {
+        let achievement = Achievement(itemName: item.name, dateAchieved: Date())
+        var saved = UserDefaults.standard.array(forKey: "achievements") as? [Data] ?? []
+        if let encoded = try? JSONEncoder().encode(achievement) {
+            saved.append(encoded)
+            UserDefaults.standard.set(saved, forKey: "achievements")
+        }
+    }
+    
     func updateCalendarHighlight() {
         for i in 0..<30 {
             let indexPath = IndexPath(item: i, section: 0)
@@ -135,6 +145,7 @@ class ViewController: UIViewController, UICollectionViewDataSource, UICollection
         if selectedItem.count == 30 {
             imageView.image = UIImage(named: "end2")
             imageView.isHidden = false
+            saveAchievement(for: selectedItem)
         } else {
             imageView.isHidden = true
         }

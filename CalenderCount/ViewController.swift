@@ -1,11 +1,3 @@
-
-//
-//  ViewController.swift
-//  CalenderCount
-//
-//  Created by 中村健介 on 2025/05/11.
-//
-
 import UIKit
 
 class ViewController: UIViewController, UICollectionViewDataSource, UICollectionViewDelegateFlowLayout {
@@ -13,9 +5,8 @@ class ViewController: UIViewController, UICollectionViewDataSource, UICollection
     var selectedItem: Item!
     var itemIndex: Int!
     var updateHandler: ((Item) -> Void)?
-    let itemLabel = UILabel()
     
-
+    let itemLabel = UILabel()
     let countLabel = UILabel()
     
     let imageView: UIImageView = {
@@ -40,22 +31,20 @@ class ViewController: UIViewController, UICollectionViewDataSource, UICollection
         super.viewDidLoad()
         view.backgroundColor = UIColor(red: 0.733, green: 0.886, blue: 0.945, alpha: 1.0) // #bbe2f1
 
-        // 我慢項目ラベルの設定
+        // ラベル設定
         itemLabel.text = "\(selectedItem?.name ?? "我慢")を我慢中‼️"
-        //itemLabel.backgroundColor = .white
         itemLabel.font = UIFont.systemFont(ofSize: 24)
         itemLabel.textAlignment = .center
         itemLabel.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(itemLabel)
 
-        // ラベルの設定
         countLabel.text = "\(selectedItem.count)"
         countLabel.font = UIFont.systemFont(ofSize: 60)
         countLabel.textAlignment = .center
         countLabel.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(countLabel)
 
-        // ＋ボタンの設定
+        // ＋ボタン
         let plusButton = UIButton(type: .system)
         plusButton.setTitle("＋", for: .normal)
         plusButton.titleLabel?.font = UIFont.systemFont(ofSize: 40)
@@ -63,7 +52,7 @@ class ViewController: UIViewController, UICollectionViewDataSource, UICollection
         plusButton.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(plusButton)
 
-        // −ボタンの設定
+        // −ボタン
         let minusButton = UIButton(type: .system)
         minusButton.setTitle("−", for: .normal)
         minusButton.titleLabel?.font = UIFont.systemFont(ofSize: 40)
@@ -71,21 +60,19 @@ class ViewController: UIViewController, UICollectionViewDataSource, UICollection
         minusButton.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(minusButton)
 
-        // Auto Layout
+        // レイアウト
         NSLayoutConstraint.activate([
             itemLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
             itemLabel.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 10),
-
             countLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
             countLabel.topAnchor.constraint(equalTo: itemLabel.bottomAnchor, constant: 10),
-
             minusButton.centerYAnchor.constraint(equalTo: countLabel.centerYAnchor),
             minusButton.trailingAnchor.constraint(equalTo: countLabel.leadingAnchor, constant: -30),
-
             plusButton.centerYAnchor.constraint(equalTo: countLabel.centerYAnchor),
             plusButton.leadingAnchor.constraint(equalTo: countLabel.trailingAnchor, constant: 30),
         ])
         
+        // カレンダー表示
         calendarCollectionView.dataSource = self
         calendarCollectionView.delegate = self
         calendarCollectionView.register(UICollectionViewCell.self, forCellWithReuseIdentifier: "cell")
@@ -98,8 +85,8 @@ class ViewController: UIViewController, UICollectionViewDataSource, UICollection
             calendarCollectionView.heightAnchor.constraint(equalToConstant: 250)
         ])
         
+        // 達成画像
         view.addSubview(imageView)
-
         NSLayoutConstraint.activate([
             imageView.topAnchor.constraint(equalTo: view.topAnchor),
             imageView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
@@ -121,25 +108,12 @@ class ViewController: UIViewController, UICollectionViewDataSource, UICollection
         updateCalendarHighlight()
         updateHandler?(selectedItem)
     }
-    
-    func saveAchievement(for item: Item) {
-        let achievement = Achievement(itemName: item.name, dateAchieved: Date())
-        var saved = UserDefaults.standard.array(forKey: "achievements") as? [Data] ?? []
-        if let encoded = try? JSONEncoder().encode(achievement) {
-            saved.append(encoded)
-            UserDefaults.standard.set(saved, forKey: "achievements")
-        }
-    }
-    
+
     func updateCalendarHighlight() {
         for i in 0..<30 {
             let indexPath = IndexPath(item: i, section: 0)
             if let cell = calendarCollectionView.cellForItem(at: indexPath) {
-                if i < selectedItem.count {
-                    cell.backgroundColor = UIColor.systemBlue
-                } else {
-                    cell.backgroundColor = .white
-                }
+                cell.backgroundColor = i < selectedItem.count ? UIColor.systemBlue : .white
             }
         }
         if selectedItem.count == 30 {
@@ -150,26 +124,30 @@ class ViewController: UIViewController, UICollectionViewDataSource, UICollection
             imageView.isHidden = true
         }
     }
-    
+
+    func saveAchievement(for item: Item) {
+        let achievement = Achievement(itemName: item.name, dateAchieved: Date())
+        var saved = UserDefaults.standard.array(forKey: "achievements") as? [Data] ?? []
+        if let encoded = try? JSONEncoder().encode(achievement) {
+            saved.append(encoded)
+            UserDefaults.standard.set(saved, forKey: "achievements")
+        }
+    }
+
+    // MARK: - CollectionView
+
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return 30 // 6列×5行 = 30日
+        return 30
     }
 
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "cell", for: indexPath)
 
-        for subview in cell.contentView.subviews {
-            subview.removeFromSuperview()
-        }
-
-        if indexPath.item < selectedItem.count {
-            cell.backgroundColor = UIColor.systemBlue
-        } else {
-            cell.backgroundColor = .white
-        }
+        cell.contentView.subviews.forEach { $0.removeFromSuperview() }
+        cell.backgroundColor = indexPath.item < selectedItem.count ? .systemBlue : .white
 
         let label = UILabel(frame: cell.contentView.bounds)
-        label.text = indexPath.item < 30 ? "\(indexPath.item + 1)" : ""
+        label.text = "\(indexPath.item + 1)"
         label.textAlignment = .center
         label.font = UIFont.systemFont(ofSize: 14)
         cell.contentView.addSubview(label)
@@ -178,7 +156,7 @@ class ViewController: UIViewController, UICollectionViewDataSource, UICollection
     }
 
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
-        let totalSpacing: CGFloat = 5  // 6 gaps between 6 columns
+        let totalSpacing: CGFloat = 5
         let width = (collectionView.frame.width - totalSpacing) / 6
         let height = (collectionView.frame.height - totalSpacing) / 5
         return CGSize(width: width, height: height)

@@ -7,7 +7,7 @@
 
 import UIKit
 
-struct Item {
+struct Item: Codable {
     var name: String
     var count: Int
 }
@@ -19,7 +19,7 @@ struct Achievement: Codable {
 
 class SelectViewController: UIViewController, UITableViewDelegate, UITableViewDataSource {
     
-    var items: [Item] = []
+    var items: [Item]!
     
     @IBOutlet weak var tableView: UITableView!
     
@@ -28,6 +28,7 @@ class SelectViewController: UIViewController, UITableViewDelegate, UITableViewDa
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        loadItems()
         view.backgroundColor = UIColor(red: 0.733, green: 0.886, blue: 0.945, alpha: 1.0) // #bbe2f1
         tableView.delegate = self
         tableView.dataSource = self
@@ -65,6 +66,22 @@ class SelectViewController: UIViewController, UITableViewDelegate, UITableViewDa
             addButton.heightAnchor.constraint(equalToConstant: 60)
         ])
     }
+    
+    func saveItems() {
+        if let encoded = try? JSONEncoder().encode(items) {
+            UserDefaults.standard.set(encoded, forKey: "items")
+        }
+    }
+    
+    func loadItems() {
+        if let data = UserDefaults.standard.data(forKey: "items"),
+           let decoded = try? JSONDecoder().decode([Item].self, from: data) {
+            items = decoded
+        } else {
+            items = []
+        }
+    }
+    
     func loadAchievements() -> [Achievement] {
         let dataArray = UserDefaults.standard.array(forKey: "achievements") as? [Data] ?? []
         return dataArray.compactMap { try? JSONDecoder().decode(Achievement.self, from: $0) }
@@ -93,6 +110,7 @@ class SelectViewController: UIViewController, UITableViewDelegate, UITableViewDa
         vc.updateHandler = { updatedItem in
             self.items[indexPath.row] = updatedItem
             self.tableView.reloadData()
+            self.saveItems()
             self.tableView.deselectRow(at: indexPath, animated: true)
         }
         navigationController?.pushViewController(vc, animated: true)
@@ -107,6 +125,7 @@ class SelectViewController: UIViewController, UITableViewDelegate, UITableViewDa
             if let text = alert.textFields?.first?.text, !text.isEmpty {
                 self.items.append(Item(name: text, count: 0))
                 self.tableView.reloadData()
+                self.saveItems()
             }
         }
         let cancelAction = UIAlertAction(title: "キャンセル", style: .cancel, handler: nil)
@@ -120,6 +139,7 @@ class SelectViewController: UIViewController, UITableViewDelegate, UITableViewDa
         if editingStyle == .delete {
             items.remove(at: indexPath.row)
             tableView.deleteRows(at: [indexPath], with: .fade)
+            self.saveItems()
         }
     }
     @objc func showAchievements() {

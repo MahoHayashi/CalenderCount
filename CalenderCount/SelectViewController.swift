@@ -7,9 +7,14 @@
 
 import UIKit
 
+struct Item {
+    var name: String
+    var count: Int
+}
+
 class SelectViewController: UIViewController, UITableViewDelegate, UITableViewDataSource {
     
-    var items: [String] = []
+    var items: [Item] = []
     
     @IBOutlet weak var tableView: UITableView!
     
@@ -46,7 +51,7 @@ class SelectViewController: UIViewController, UITableViewDelegate, UITableViewDa
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "Cell") ?? UITableViewCell(style: .default, reuseIdentifier: "Cell")
-        cell.textLabel?.text = items[indexPath.row]
+        cell.textLabel?.text = items[indexPath.row].name
         return cell
     }
 
@@ -54,6 +59,11 @@ class SelectViewController: UIViewController, UITableViewDelegate, UITableViewDa
         let storyboard = UIStoryboard(name: "Main", bundle: nil)
         let vc = storyboard.instantiateViewController(withIdentifier: "ViewController") as! ViewController
         vc.selectedItem = items[indexPath.row]
+        vc.itemIndex = indexPath.row
+        vc.updateHandler = { updatedItem in
+            self.items[indexPath.row] = updatedItem
+            self.tableView.reloadData()
+        }
         navigationController?.pushViewController(vc, animated: true)
     }
     
@@ -64,7 +74,7 @@ class SelectViewController: UIViewController, UITableViewDelegate, UITableViewDa
         }
         let addAction = UIAlertAction(title: "追加", style: .default) { _ in
             if let text = alert.textFields?.first?.text, !text.isEmpty {
-                self.items.append(text)
+                self.items.append(Item(name: text, count: 0))
                 self.tableView.reloadData()
             }
         }

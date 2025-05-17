@@ -1,3 +1,4 @@
+
 //
 //  ViewController.swift
 //  CalenderCount
@@ -9,10 +10,12 @@ import UIKit
 
 class ViewController: UIViewController, UICollectionViewDataSource, UICollectionViewDelegateFlowLayout {
 
-    var selectedItem: String?  // 選択された我慢項目を表示用
+    var selectedItem: Item!
+    var itemIndex: Int!
+    var updateHandler: ((Item) -> Void)?
     let itemLabel = UILabel()
+    
 
-    var count = 0
     let countLabel = UILabel()
     
     let imageView: UIImageView = {
@@ -38,7 +41,7 @@ class ViewController: UIViewController, UICollectionViewDataSource, UICollection
         view.backgroundColor = UIColor(red: 0.733, green: 0.886, blue: 0.945, alpha: 1.0) // #bbe2f1
 
         // 我慢項目ラベルの設定
-        itemLabel.text = "\(selectedItem ?? "我慢")を我慢中‼️"
+        itemLabel.text = "\(selectedItem?.name ?? "我慢")を我慢中‼️"
         //itemLabel.backgroundColor = .white
         itemLabel.font = UIFont.systemFont(ofSize: 24)
         itemLabel.textAlignment = .center
@@ -46,7 +49,7 @@ class ViewController: UIViewController, UICollectionViewDataSource, UICollection
         view.addSubview(itemLabel)
 
         // ラベルの設定
-        countLabel.text = "\(count)"
+        countLabel.text = "\(selectedItem.count)"
         countLabel.font = UIFont.systemFont(ofSize: 60)
         countLabel.textAlignment = .center
         countLabel.translatesAutoresizingMaskIntoConstraints = false
@@ -106,31 +109,43 @@ class ViewController: UIViewController, UICollectionViewDataSource, UICollection
     }
 
     @objc func incrementCount() {
-        count = (count + 1) % 31
-        countLabel.text = "\(count)"
+        selectedItem.count = (selectedItem.count + 1) % 31
+        countLabel.text = "\(selectedItem.count)"
         updateCalendarHighlight()
+        updateHandler?(selectedItem)
     }
 
     @objc func decrementCount() {
-        count = max(0, count - 1)
-        countLabel.text = "\(count)"
+        selectedItem.count = max(0, selectedItem.count - 1)
+        countLabel.text = "\(selectedItem.count)"
         updateCalendarHighlight()
+        updateHandler?(selectedItem)
+    }
+    
+    func saveAchievement(for item: Item) {
+        let achievement = Achievement(itemName: item.name, dateAchieved: Date())
+        var saved = UserDefaults.standard.array(forKey: "achievements") as? [Data] ?? []
+        if let encoded = try? JSONEncoder().encode(achievement) {
+            saved.append(encoded)
+            UserDefaults.standard.set(saved, forKey: "achievements")
+        }
     }
     
     func updateCalendarHighlight() {
         for i in 0..<30 {
             let indexPath = IndexPath(item: i, section: 0)
             if let cell = calendarCollectionView.cellForItem(at: indexPath) {
-                if i < count {
+                if i < selectedItem.count {
                     cell.backgroundColor = UIColor.systemBlue
                 } else {
                     cell.backgroundColor = .white
                 }
             }
         }
-        if count == 30 {
+        if selectedItem.count == 30 {
             imageView.image = UIImage(named: "end2")
             imageView.isHidden = false
+            saveAchievement(for: selectedItem)
         } else {
             imageView.isHidden = true
         }
@@ -147,7 +162,7 @@ class ViewController: UIViewController, UICollectionViewDataSource, UICollection
             subview.removeFromSuperview()
         }
 
-        if indexPath.item < count {
+        if indexPath.item < selectedItem.count {
             cell.backgroundColor = UIColor.systemBlue
         } else {
             cell.backgroundColor = .white
